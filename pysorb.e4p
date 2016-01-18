@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Project SYSTEM "Project-4.6.dtd">
+<!-- eric4 project file for project pysorb -->
+<!-- Saved: 2015-08-11, 16:36:11 -->
+<!-- Copyright (C) 2015 ,  -->
+<Project version="4.6">
+  <Language>en</Language>
+  <ProgLanguage mixed="0">Python</ProgLanguage>
+  <ProjectType>Qt4</ProjectType>
+  <Description></Description>
+  <Version>0.1</Version>
+  <Author></Author>
+  <Email></Email>
+  <Sources>
+    <Source>pysorb_run_qe.backup.py</Source>
+    <Source>pysorb_rename.py</Source>
+    <Source>lib/transformations.py</Source>
+    <Source>lib/write_qein.py</Source>
+    <Source>lib/convert.py</Source>
+    <Source>lib/randomimage.py</Source>
+    <Source>lib/__init__.py</Source>
+    <Source>__init__.py</Source>
+    <Source>pysorb_mkqein.py</Source>
+    <Source>pysorb_fit.py</Source>
+    <Source>classes/__init__.py</Source>
+    <Source>classes/QEout.py</Source>
+    <Source>classes/System.py</Source>
+    <Source>classes/Slab.py</Source>
+    <Source>classes/Molecule.py</Source>
+    <Source>lib/configurations.py</Source>
+    <Source>pysorb_compare.py</Source>
+    <Source>pysorb_qerun.py</Source>
+    <Source>lib/helper.py</Source>
+    <Source>pysorb_dump.py</Source>
+  </Sources>
+  <Forms>
+  </Forms>
+  <Translations>
+  </Translations>
+  <Resources>
+  </Resources>
+  <Interfaces>
+  </Interfaces>
+  <Others>
+  </Others>
+  <Vcs>
+    <VcsType>None</VcsType>
+  </Vcs>
+  <FiletypeAssociations>
+    <FiletypeAssociation pattern="*.ui" type="FORMS" />
+    <FiletypeAssociation pattern="*.idl" type="INTERFACES" />
+    <FiletypeAssociation pattern="*.qm" type="TRANSLATIONS" />
+    <FiletypeAssociation pattern="*.ptl" type="SOURCES" />
+    <FiletypeAssociation pattern="*.pyw" type="SOURCES" />
+    <FiletypeAssociation pattern="*.ui.h" type="FORMS" />
+    <FiletypeAssociation pattern="*.ts" type="TRANSLATIONS" />
+    <FiletypeAssociation pattern="*.py" type="SOURCES" />
+    <FiletypeAssociation pattern="*.qrc" type="RESOURCES" />
+  </FiletypeAssociations>
+</Project>

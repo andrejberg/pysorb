@@ -1,0 +1,9 @@
+# Eric project file
+#*.e4p
+
+# trash files
+*~
+\#*\#
+
+# compiled files
+*.pyc
