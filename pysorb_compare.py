@@ -17,6 +17,7 @@ import subprocess as sub
 import math
 
 from classes.QEout import *
+import lib.IO as IO
 import lib.convert as convert
 
 
@@ -27,7 +28,7 @@ Options:
     -h              display help message
     -d  Input       QE dump file from pysorb_dump
     -p  Input, Opt  ff.param
-    -o  Output, Opt qe_E_ads.dat
+    -o  Output      qe_E_ads.dat
     -oc Output, Opt class_E_ads.dat
     -op Output, Opt qe_vs_class_E_ads.dat
     --------------------------------------------
@@ -106,30 +107,11 @@ if do_gulp:
       sys.exit()
 
 
-# Open dump file and read it into dump_entries, then create list of QEoutDump()
-# @@ in eine eigene funktion umschreiben: read_dump() @@
-dump = open(dump_file, "r")
-dump_content = dump.readlines()
-dump.close()
-dump_entries = []
-entry = []
-for line in dump_content:
-    if "START" not in line and "END" not in line:
-        entry.append(line)
-    if "END" in line:
-        dump_entries.append(entry)
-        entry = []
-qe_calcs = [QEoutDump(entry) for entry in dump_entries]
-e_qe  = np.asarray([calc.getenergy() for calc in qe_calcs])
+# Open dump file and create list of QEoutDump()
+qe_calcs = IO.read_dump(dump_file)
 
-if output_o:
-    # write out -o file
-    qe_E_ads = open(qe_E_ads_file, 'wb')
-    qe_E_ads.write("# index \t energy \t prefix \t distance \t phi \t psi \t adsorbed \n")
-    i = 1
-    for calc in qe_calcs:
-        qe_E_ads.write("%9.6f %9.6f %-2s %9.6f %i %i %-2s \n" % (i, calc.getenergy(), calc.getprefix(), calc.getdist(), calc.getphi(), calc.getpsi(), calc.getadsorbedatom()))
-        i+=1
+
+
 
 
 # -----------------------------------------------CLASSICAL CALCLUATION--------------------------------------------------
@@ -183,32 +165,17 @@ if do_gulp:
 
 # -------------------------------------------CLASSICAL CALCULATION DONE -------------------------------------------
 
-if output_oc:
-    # write adsorption E from GULP calc to file
-    calss_E_ads = file(calss_E_ads_file, 'wb')
-    calss_E_ads.write("# index \t energy \t prefix \t distance \t phi \t psi \t adsorbed \n")
-    i = 1
-    for calc in qe_calcs:
-        calss_E_ads.write("%9.6f %9.6f %-2s %9.6f %i %i %-2s \n" % (i, e_gulp[i-1], calc.getprefix(), calc.getdist(), calc.getphi(), calc.getpsi(), calc.getadsorbedatom()))
-        i+=1
-    calss_E_ads.close()
-    
-if output_op:
-    # write adsorption E from both to one file
-    sum_of_sq = np.sum(np.square(e_qe - e_gulp))
-    mean_of_sq = np.mean(np.square(e_qe - e_gulp))
-    qe_vs_class_E_ads = file(qe_vs_class_E_ads_file,  'wb')
-    qe_vs_class_E_ads.write("# Squares:\n")
-    qe_vs_class_E_ads.write("# ----------------------------------------------------\n")
-    qe_vs_class_E_ads.write("# Sum \t Mean \t%f\t%f\n" % (sum_of_sq,mean_of_sq))
-    qe_vs_class_E_ads.write("# ----------------------------------------------------\n\n")
-    qe_vs_class_E_ads.write("# index \t energyDFT \t energyFF \t prefix \t distance \t phi \t psi \t adsorbed \n")
-    i = 1
-    for calc in qe_calcs:
-        qe_vs_class_E_ads.write("%9.6f %9.6f %9.6f %-2s %9.6f %i %i %-2s \n" % (i, calc.getenergy(), e_gulp[i-1], calc.getprefix(), calc.getdist(), calc.getphi(), calc.getpsi(), calc.getadsorbedatom()))
-        i+=1
-    qe_vs_class_E_ads.close()
+# write adsorption E from QE to file
+if output_o:
+    IO.write_e_qe(qe_calcs, qe_E_ads_file)
 
+# write adsorption E from GULP to file
+if output_oc:
+    IO.write_e_gulp(qe_calcs, e_gulp, calss_E_ads_file)
+
+# write adsorption E from both to one file
+if output_op:
+    IO.write_e(qe_calcs, e_gulp, qe_vs_class_E_ads_file)
 
 
 ## write adsorption E in tex file

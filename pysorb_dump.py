@@ -59,6 +59,7 @@ try:
 except IOError:
     print "Reference file not found (-ref)"
     sys.exit()
+
 ref_content = ref.readlines()
 ref.close()
 e_sys = 0
