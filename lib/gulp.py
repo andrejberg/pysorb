@@ -15,10 +15,10 @@ def gulp_run_init(param_file):
     if not os.path.exists("gulp_run_files"):
        os.makedirs("gulp_run_files")
        print "Creating dictionary for GULP run files."
-    param_file = param_file.split(".")[0]
+    param_file = os.path.basename(param_file).split(".")[0]
     ts         = time.time()
     tstamp     = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d_%H-%M-%S')
-    file_name  = os.path.join("gulp_run_files", param_file + "_" + tstamp)
+    file_name  = os.path.join("gulp_run_files", tstamp + "_" + param_file)
     return file_name + ".gin", file_name + ".gout"
 
 

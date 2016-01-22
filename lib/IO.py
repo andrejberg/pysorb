@@ -65,10 +65,13 @@ body = { "simple_QE" : output_format[0][1] + output_format[1][1] + output_format
 
 # @@ Die funktion gefaellt mir nicht da sie eine schon offene file braucht
 # write numerical analysis of to energy sets
-def write_e_analysis(e1, e2, name, out):
+def write_e_analysis(e1, e2, name, flag, out):
+    flag = "comp" + flag
+    ws   = " " * len(flag)
     out.write("# " + name + "\n")
     out.write("# " + "-" * 80 + "\n")
-    out.write("# Dmax SOS MSD MSDstd %11.6f %11.6f %11.6f %11.6f \n" % helper.compare_e(e1, e2))
+    out.write("# " + ws   + "%16s%16s%16s%16s\n"         % ("Dmax", "SOS", "MSD", "MSDstd"))
+    out.write("# " + flag + "%16.6f%16.6f%16.6f%16.6f\n" % helper.compare_e(e1, e2))
     out.write("# " + "-" * 80 + "\n\n")
 
 # nice output of potentials
@@ -131,19 +134,19 @@ def write_e(qe_calcs, e_gulp, f):
     e_unit_out  = "kJ"
     d_unit_in   = "Ang"
     d_unit_out  = "nm"
-    e_qe        = convert.e(e_unit_in, e_unit_out, np.asarray([calc.getenergy() for calc in qe_calcs]))
+    
+    e_qe        = convert.e(e_unit_in, e_unit_out, [calc.getenergy() for calc in qe_calcs])
     e_gulp      = convert.e(e_unit_in, e_unit_out, e_gulp)
+    d           = convert.d(d_unit_in, d_unit_out, [calc.getdist() for calc in qe_calcs])
+    
     qe_vs_class_E_ads = file(f,  'wb')
     qe_vs_class_E_ads.write("# " + "-" * 100 + "\n")
-    write_e_analysis(e_qe, e_gulp, "Energies", qe_vs_class_E_ads)
+    write_e_analysis(e_qe, e_gulp, "Energies", "", qe_vs_class_E_ads)
     qe_vs_class_E_ads.write("# " + "-" * 100 + "\n\n")
     qe_vs_class_E_ads.write(head["compare"][0] % head["compare"][1])
     i = 0
-    for calc in qe_calcs:
-        e_qe = convert.e(e_unit_in, e_unit_out, calc.getenergy())
-        e_gp = convert.e(e_unit_in, e_unit_out, e_gulp[i])
-        d    = convert.d(d_unit_in, d_unit_out, calc.getdist())
-        qe_vs_class_E_ads.write(body["compare"] % (i, e_qe, e_gp, d, calc.getphi(), calc.getpsi(), calc.getadsorbedatom(), calc.getprefix()))
+    for calc in qe_calcs:        
+        qe_vs_class_E_ads.write(body["compare"] % (i, e_qe[i], e_gulp[i], d[i], calc.getphi(), calc.getpsi(), calc.getadsorbedatom(), calc.getprefix()))
         i+=1
     qe_vs_class_E_ads.close()
 
@@ -159,6 +162,7 @@ def write_e_after_fit(qe_calcs, gulp_calc, ff_params, f):
     e_qe    = convert.e(e_unit_in, e_unit_out, gulp_calc.e_qe)
     e_init  = convert.e(e_unit_in, e_unit_out, gulp_calc.e_init)
     e_final = convert.e(e_unit_in, e_unit_out, gulp_calc.e_fin)
+    d       = convert.d(d_unit_in, d_unit_out, [calc.getdist() for calc in qe_calcs])
     
     out = file(f, 'wb')
     out.write("# " + "-" * 100 + "\n")
@@ -168,14 +172,14 @@ def write_e_after_fit(qe_calcs, gulp_calc, ff_params, f):
     out.write("# " + "-" * 100 + "\n\n")
     
     out.write("# " + "-" * 100 + "\n")
-    write_e_analysis(e_qe, e_init, "Initial energies:", out)
+    write_e_analysis(e_qe, e_init, "Initial energies:", "INIT", out)
     write_potentials(gulp_calc.pot_init, "Initial potentials:", out)
     for line in gulp_calc.rawpot_init:
         out.write("# " + line)
     out.write("# " + "-" * 100 + "\n\n")
     
     out.write("# " + "-" * 100 + "\n")
-    write_e_analysis(e_qe, e_final, "Final energies:", out)
+    write_e_analysis(e_qe, e_final, "Final energies:", "FIN", out)
     write_potentials(gulp_calc.pot_final, "Final potentials:", out)
     for line in gulp_calc.rawpot_final:
         out.write("# " + line)
@@ -184,8 +188,7 @@ def write_e_after_fit(qe_calcs, gulp_calc, ff_params, f):
     out.write(head["fit"][0] % head["fit"][1])
     i = 0
     for calc in qe_calcs:
-        d   = convert.d(d_unit_in, d_unit_out, calc.getdist())
-        out.write(body["fit"] % (i, e_qe[i], e_init[i], e_final[i], d, calc.getphi(), calc.getpsi(), calc.getadsorbedatom(), calc.getprefix()))
+        out.write(body["fit"] % (i, e_qe[i], e_init[i], e_final[i], d[i], calc.getphi(), calc.getpsi(), calc.getadsorbedatom(), calc.getprefix()))
         i+=1
     out.close()
 

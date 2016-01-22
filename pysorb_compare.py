@@ -19,6 +19,7 @@ import math
 from classes.QEout import *
 import lib.IO as IO
 import lib.convert as convert
+import lib.gulp as gulp
 
 
 help = '''
@@ -118,8 +119,9 @@ qe_calcs = IO.read_dump(dump_file)
 # @@ in eine eigene funktion umschreiben: gulp_calc() @@
 if do_gulp:
     # open gulp files
-    gulp_in_file = 'tmp.gin' 
-    gulp_out_file = 'tmp.gout'
+    gulp_in_file, gulp_out_file = gulp.gulp_run_init(param_file)
+#    gulp_in_file = 'tmp.gin' 
+#    gulp_out_file = 'tmp.gout'
     gulp_in = file(gulp_in_file, 'wb')
     
     # GULP FILE HEADER

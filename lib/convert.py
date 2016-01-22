@@ -36,7 +36,10 @@ def d(from_unit, to_unit, x):
     factor = { "bohr"  : 0.0529, 
                "Ang"   : 0.1,
                "nm"    : 1.0}
-    return(x * factor[from_unit] / factor[to_unit])
+    if hasattr(x, '__iter__'):
+        return(np.asarray([(i * factor[from_unit] / factor[to_unit]) for i in x]))
+    else:
+        return(x * factor[from_unit] / factor[to_unit])
 
 
 
