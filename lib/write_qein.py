@@ -71,14 +71,13 @@ def write_submit_script(confs, qe_inputdir, prefix):
 #$ -N ''' + title + '''        # the name of the job
 #$ -q scc
 #$ -pe mpi 32
-#$ -m eba  # send a mail at end
-#$ -l h_rt=168:00:00
+#$ -m e  # send a mail
+#$ -l h_rt=24:00:00
 #$ -l h_vmem=2G
 #$ -l ib
 export NUMTHREADS=32
-export OMP_NUM_THREADS=1
-
-module load quantumespresso
+module purge
+module load quantumespresso/5.1.2-intel
 mpirun -n $NUMTHREADS pw.x -inp ''' + input_file
 
       submit.write(content)

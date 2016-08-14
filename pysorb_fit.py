@@ -12,33 +12,41 @@ import subprocess as sub
 import math
 
 from classes.QEout import *
+from classes.GULPout import *
+import lib.IO as IO
 import lib.convert
+import lib.gulp as gulp
 
 
 
 help = '''
---------------------  pysorb qe2gulp  ---------------
+------------------------  pysorb qe2gulp  ------------------------------------
 
 Options:
-    -h               display help message
-    -d  Input        QE dump file from pysorb_dump
-    -p  Input        ff.param
-    -o  Output, Opt  fit.dat
-    --------------------------------------------
-    -negative  no   use only structures with negative adsorption energies
-    -nco       0    cut of for "negatvie" energies
-------------------------------------------------------
+    -h                | display help message
+    -d   Input        | QE dump file from pysorb_dump
+    -p   Input        | ff.param
+    -o   Output, Opt  | fit.dat
+    -itp Output, Opt  | potentials.itp (GROMACS topology file)
+    -gp  Output, Opt  | potentials.gp (Gnuplot input file)
+    -------------------------------------------------------------------------
+    -negative  no     | use only structures with negative adsorption energies
+    -nco       0      | cut of for "negatvie" energies
+-----------------------------------------------------------------------------
 '''
 
 # INITIAL PARAMETER
 # FILES
-param_file="ff.param"
-o_file = "fit.dat"
+param_file = "ff.param"
+o_file     = "fit.dat"
+itp_file   = "potentials.itp"
+gp_file    = "potentials.gp"
 
-
-# MODES
+# OPTIONS
 only_negative = False
-output_o = False
+output_o      = False
+output_itp    = False
+output_gp     = False
 #use_simplex = False
 
 if len(sys.argv)>1:
@@ -56,12 +64,18 @@ if len(sys.argv)>1:
      except:
          pass
      output_o = True
-#   if option=="oa":
-#     try:
-#         oa_file = sys.argv[sys.argv.index('-oa')+1]
-#     except:
-#         pass
-#     output_oa = True
+   if option=="itp":
+     try:
+         itp_file = sys.argv[sys.argv.index('-itp')+1]
+     except:
+         pass
+     output_itp = True
+   if option=="gp":
+     try:
+         gp_file = sys.argv[sys.argv.index('-gp')+1]
+     except:
+         pass
+     output_gp = True
    if option=="negative":
      only_negative = True
      negative_co = sys.argv[sys.argv.index('-negative')+1]
@@ -85,35 +99,15 @@ except NameError:
   print "Parameter file not defined. (-p)"
   sys.exit()
 
-# Open dump file and read it into dump_entries, then create list of QEoutDump()
-# @@ in eine eigene funktion umschreiben: read_dump() @@
-dump = open(dump_file, "r")
-dump_content = dump.readlines()
-dump.close()
-dump_entries = []
-entry = []
-for line in dump_content:
-    if "START" not in line and "END" not in line:
-        entry.append(line)
-    if "END" in line:
-        dump_entries.append(entry)
-        entry = []
-qe_calcs = [QEoutDump(entry) for entry in dump_entries]
+# Open dump file and create list of QEoutDump()
+qe_calcs = IO.read_dump(dump_file)
 
-#if output_o:
-#    # write out -o file
-#    qe_E_ads = open(qe_E_ads_file, 'wb')
-#    qe_E_ads.write("# index \t energy \t prefix \t distance \t phi \t psi \n")
-#    i = 1
-#    for calc in qe_calcs:
-#        qe_E_ads.write("%9.6f %9.6f %-2s %9.6f %i %i \n" % (i, calc.getenergy(), calc.getprefix(), calc.getdist(), calc.getphi(), calc.getpsi()))
-#        i+=1
 
 # ------------------------------------------------- GULP FIT ---------------------------------------------------------
 # @@ in eine eigene funktion umschreiben: gulp_fit() @@
 # open gulp files
-gulp_in_file = 'tmp.gin' 
-gulp_out_file = 'tmp.gout'
+gulp_in_file, gulp_out_file = gulp.gulp_run_init(param_file)
+
 gulp_in = file(gulp_in_file, 'wb')
 
 # GULP FILE HEADER
@@ -138,10 +132,10 @@ ff = open(param_file, 'r')
 ff_params = ff.readlines()
 ff.close()
 for line in ff_params:
-    if "core" in line:
-        gulp_in.write(" ".join(line.split()[0:7]) + " 1 1\n")
-    else:
-        gulp_in.write(line)
+    #if "core" in line:
+    #    gulp_in.write(" ".join(line.split()[0:7]) + " 1 1\n")
+    #else:
+    gulp_in.write(line)
 
 # CLOSE INPUT FILE
 gulp_in.close()
@@ -152,69 +146,19 @@ sub.call(['/bin/bash',
                 '-c',
                 "gulp <" + gulp_in_file + " > " + gulp_out_file])
 
-# Read Gulp output: Energies in one array
-gulp_out = file(gulp_out_file, 'r')
-gulp_out_content = gulp_out.readlines()
-gulp_out.close()
-e_gulp_before = []
-e_gulp_after = []
-params_sum = []
-squares = []
-read_energy = False
-read_params = False
-read_sq = False
-for line in gulp_out_content:
-    if "Comparison of initial and final observables :" in line:
-        read_energy = True
-    if "Maximum range for interatomic potentials" in line:
-        read_energy = False
-    if "Final values of parameters" in line:
-        read_params = True
-    if "Final values of numerical parameter gradients" in line:
-        read_params = False
-    if "Final values of residuals :" in line:
-        read_sq = True
-    if "Comparison of initial and final observables" in line:
-        read_sq = False
-    if read_energy and "Energy" in line:
-        e_gulp_before.append(float(line.split()[3]))
-        e_gulp_after.append(float(line.split()[4]))
-    if read_params:
-        params_sum.append(line)
-    if "Final sum of squares =" in line:
-        sum_of_sq = line.split()[5]
-    if read_sq and "Energy" in line:
-        squares.append(float(line.split()[4]))
-e_gulp_before = np.asarray(e_gulp_before)
-e_gulp_after = np.asarray(e_gulp_after)
-squares = np.asarray(squares)
-
-
-#hit1 = 'Total lattice energy       ='
-#hit2 = 'eV'
-#e_gulp = [line.split()[4] for line in gulp_out_content if hit1 in line and hit2 in line ]
-#e_gulp = [float(i) for i in e_gulp]
-#e_gulp = np.asarray(e_gulp)
-# Hier muss ich noch schauen wie ich die energien vor dem fit rausbekomme
-
+# Read Gulp output
+gulp_calc = GULPout(gulp_out_file)
 
 # ------------------------------------------------GULP FIT DONE -------------------------------------------------
-    
+
+# write adsorption E from both to one file
 if output_o:
-    # write adsorption E from both to one file
-    out = file(o_file,  'wb')
-    for line in params_sum:
-        out.write("# " + line)
-    out.write("# Squares:\n")
-    out.write("# ----------------------------------------------------\n")
-    out.write("# Sum \t Mean \t" + sum_of_sq + "\t" + str(np.mean(squares)) + "\n")
-    out.write("# ----------------------------------------------------\n\n")
-    out.write("# index \t energyDFT \t energyFF_before \t energyFF_after \t prefix \t distance \t phi \t psi \n")
-    i = 1
-    for calc in qe_calcs:
-        out.write("%9.6f %9.6f %9.6f %9.6f %-8s %9.6f %i %i \n" % (i, calc.getenergy(), e_gulp_before[i-1], e_gulp_after[i-1], calc.getprefix(), calc.getdist(), calc.getphi(), calc.getpsi()))
-        i+=1
-    out.close()
+    IO.write_e_after_fit(qe_calcs, gulp_calc, ff_params, o_file)
+if output_itp:
+    IO.write_potentials_GROMACS(gulp_calc, itp_file)
+if output_gp:
+    IO.write_potentials_gnuplot(gulp_calc, gp_file)
+    
 
 
 # get reference energy for QE IN THE BEGINING!!!

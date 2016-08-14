@@ -6,6 +6,7 @@
 # helper functions
 #### ------------------------------------------ ####
 from math import *
+import numpy as np
 
 # get center vector. wrong for two vectors if c=(000) ?
 def center(a, b, c=[0, 0, 0]):
@@ -24,3 +25,9 @@ def axis_str(i):
 def distance(a, b):
     d = sqrt(pow((a[0]-b[0]), 2) + pow((a[1]-b[1]), 2) + pow((a[2]-b[2]), 2))
     return d
+
+def compare_e(e1, e2):
+    delta_e = e1 - e2
+    sq      = np.square(delta_e)
+    return (np.max(delta_e), np.sum(sq), np.mean(sq), np.std(sq))
+    
