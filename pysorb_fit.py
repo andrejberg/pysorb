@@ -13,6 +13,7 @@ import math
 
 from classes.QEout import *
 from classes.GULPout import *
+from lib.helper import calc_weight
 import lib.IO as IO
 import lib.convert
 import lib.gulp as gulp
@@ -32,6 +33,7 @@ Options:
     -------------------------------------------------------------------------
     -negative  no     | use only structures with negative adsorption energies
     -nco       0      | cut of for "negatvie" energies
+    -w         -1     | change weights of energies in fitting (temperature)
 -----------------------------------------------------------------------------
 '''
 
@@ -44,6 +46,7 @@ gp_file    = "potentials.gp"
 
 # OPTIONS
 only_negative = False
+weight_fit    = -1
 output_o      = False
 output_itp    = False
 output_gp     = False
@@ -79,6 +82,8 @@ if len(sys.argv)>1:
    if option=="negative":
      only_negative = True
      negative_co = sys.argv[sys.argv.index('-negative')+1]
+   if option=="w":
+     weight_fit = int(sys.argv[sys.argv.index('-w')+1])
    if option=="h":
     print(help)
     sys.exit()
@@ -124,8 +129,11 @@ for calc in qe_calcs:
    for a in range(len(labels)):
       atom = atoms[a]
       gulp_in.write("%-2s %9.6f %9.6f %9.6f\n" % (labels[a], atom[0], atom[1], atom[2]))
-   gulp_in.write('observable\nenergy ev\n')
-   gulp_in.write(str(calc.getenergy()) + '\nend\n\n')
+   gulp_in.write('observable\nenergy ev\n' + str(calc.getenergy()))
+   if weight_fit != -1:
+       weight = calc_weight(calc.getenergy(), weight_fit)
+       gulp_in.write(' ' + str(weight))
+   gulp_in.write('\nend\n\n')
 
 # LJ paramerers from -p input
 ff = open(param_file, 'r')

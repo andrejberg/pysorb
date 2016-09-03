@@ -8,6 +8,9 @@
 from math import *
 import numpy as np
 
+k_b = 1.3805E-23 # bolzmann constant
+
+
 # get center vector. wrong for two vectors if c=(000) ?
 def center(a, b, c=[0, 0, 0]):
     ab = [(a[0]+b[0])/2, (a[1]+b[1])/2, (a[2]+b[2])/2]
@@ -31,3 +34,8 @@ def compare_e(e1, e2):
     sq      = np.square(delta_e)
     return (np.max(delta_e), np.sum(sq), np.mean(sq), np.std(sq))
     
+
+def calc_weight(e, t):
+    beta = 1/(k_b*t)
+    sig = 100/(1 + exp(1E-20*beta*e))
+    return sig
