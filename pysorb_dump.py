@@ -8,11 +8,10 @@
 #### ------------------------------------------ ####
 
 import os, sys, os.path
-import subprocess as sub
-import math
 
 from classes.QEout import *
 import lib.convert as convert
+from lib.helper import water_mol_orientation
 
 help = '''
 --------------------  pysorb qe2gulp  ---------------
@@ -81,10 +80,16 @@ for calc in out_files:
     dump.write("MATM " + calc.matom + "\n")
     dump.write("SATM " + calc.satom + "\n")
     dump.write("DIST " + calc.dist + "\n")
-    dump.write("PHI " + calc.phi + "\n")
-    dump.write("PSI " + calc.psi + "\n")
+    dump.write("PHI_IN " + calc.phi + "\n")
+    dump.write("PSI_IN " + calc.psi + "\n")
     dump.write("ADSORBED " + calc.getadsorbedatom()[0] + "\n")
     dump.write("D_ADS " + str(calc.getadsorbedatom()[1]) + "\n")
+    # added 24.01.17
+    dump.write("D_OXY " + str(calc.getadsorbeddistance()[1]) + "\n")
+    phi,  psi = water_mol_orientation(calc.getatompositions()[:3],  [0, 0, 1])
+    dump.write("PHI_REAL " + str(phi) + "\n")
+    dump.write("PSI_REAL " + str(psi) + "\n")
+    # added 24.01.17
     cell = calc.makecellparams()
     dump.write("CELL %9.6f %9.6f %9.6f %9.6f %9.6f %9.6f\n" % (cell[0], cell[1], cell[2], cell[3], cell[4], cell[5]))
     labels = calc.getlabels()

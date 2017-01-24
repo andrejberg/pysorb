@@ -14,7 +14,7 @@ from lib.helper import distance
 
 class QEout:
 
-   def __init__(self, source, name):
+    def __init__(self, source, name):
       self.prefix = name.split(".")[0]
       self.matom = name.split(".")[1]
       self.satom = name.split(".")[2]
@@ -25,29 +25,46 @@ class QEout:
       self.content = f.readlines()
       f.close()
 
-   def getenergy(self):
+    def getenergy(self):
       hit = '!'
       output = [float(line.split()[4]) for line in self.content if hit in line]
       return(output[-1])
 
-   def getatompositions(self):
-      hit = 'tau('
-      output = [line.split()[6:9] for line in self.content if hit in line]
-      output = [[float(i) for i in set] for set in output]
-      output = np.asarray(output)*self.getalat()*convert.bohr2ang(1)
-      return(output)
+# 24.01.17 angepasst damit positionen aus relax runs auch richtig gelesen werden
+    def getatompositions(self):
+        if 'Begin final coordinates' in "".join(self.content):
+            start = "Begin final coordinates"
+            end = "End final coordinates"
+            output = []
+            parse = False
+            for line in self.content:
+                if start in line:
+                    parse = True
+                    continue
+                if end in line:
+                    break
+                if parse and len(line.split()) == 4 or parse and len(line.split()) == 7:
+                    output = output + [ line.split()[1:4] ]
+            output = [[float(i) for i in set] for set in output]
+            output = np.asarray(output)
+        else:
+            hit = 'tau('
+            output = [line.split()[6:9] for line in self.content if hit in line]
+            output = [[float(i) for i in set] for set in output]
+            output = np.asarray(output)*self.getalat()*convert.bohr2ang(1)
+        return(output)
 
-   def getlabels(self):
+    def getlabels(self):
       hit = 'tau('
       output = [line.split()[1] for line in self.content if hit in line]
       return(output)
-
-   def getalat(self):
+    
+    def getalat(self):
       hit = 'lattice parameter (alat)  ='
       output = [float(line.split()[4]) for line in self.content if hit in line]
       return(output[0])
-
-   def getcell(self):
+    
+    def getcell(self):
       hit1 = 'a(1) = ('
       hit2 = 'a(2) = ('
       hit3 = 'a(3) = ('
@@ -55,8 +72,8 @@ class QEout:
       output = [[float(i) for i in set] for set in output]
       output = np.asarray(output)
       return(output)
-
-   def makecellparams(self):
+    
+    def makecellparams(self):
       cell = self.getcell()*self.getalat()*convert.bohr2ang(1)
       a = cell[0,0]
       b = math.sqrt(math.pow(cell[1,0], 2) + math.pow(cell[1,1], 2))
@@ -66,13 +83,28 @@ class QEout:
       gamma = math.degrees(math.acos(cell[1,0]/b))
       cellparams = np.array([a,b,c,alpha,beta,gamma])
       return cellparams
-
-   def getadsorbedatom(self):
+    
+    def getadsorbedatom(self):
         distances = []
         labels = self.getlabels()
         atoms  = self.getatompositions()
         for m in range(len(labels)):
             if labels[m] != "Au":
+                matom = atoms[m,:]
+                for n in range(len(labels)):
+                    if labels[n] == "Au":
+                        atom = atoms[n,:]
+                        distances.append((labels[m], distance(matom,  atom)))
+        mindist = min(distances, key=lambda t: t[1])
+        return mindist
+    
+    # added to calculate min dinstance between Au and O
+    def getadsorbeddistance(self):
+        distances = []
+        labels = self.getlabels()
+        atoms  = self.getatompositions()
+        for m in range(len(labels)):
+            if labels[m] == "O":
                 matom = atoms[m,:]
                 for n in range(len(labels)):
                     if labels[n] == "Au":
@@ -107,12 +139,12 @@ class QEoutDump:
       return(output[0])
 
    def getphi(self):
-      hit = 'PHI'
+      hit = 'PHI_IN'
       output = [int(line.split()[1]) for line in self.content if hit in line]
       return(output[0])
 
    def getpsi(self):
-      hit = 'PSI'
+      hit = 'PSI_IN'
       output = [int(line.split()[1]) for line in self.content if hit in line]
       return(output[0])
 
@@ -143,5 +175,19 @@ class QEoutDump:
       hit = 'ADSORBED'
       output = [line.split()[1] for line in self.content if hit in line]
       return(output[0])
+    # added 24.01.17
+   def getoxygendistance(self):
+      hit = 'D_OXY'
+      output = [float(line.split()[1]) for line in self.content if hit in line]
+      return(output[0])
 
+   def getphireal(self):
+      hit = 'PHI_REAL'
+      output = [float(line.split()[1]) for line in self.content if hit in line]
+      return(output[0])
+
+   def getpsireal(self):
+      hit = 'PSI_REAL'
+      output = [float(line.split()[1]) for line in self.content if hit in line]
+      return(output[0])
 

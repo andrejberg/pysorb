@@ -26,15 +26,16 @@ help = '''
 --------------------  pysorb qe2gulp  ---------------
 
 Options:
-    -h              display help message
-    -d  Input       QE dump file from pysorb_dump
-    -p  Input, Opt  ff.param
+    -h                    display help message
+    -d  Input          QE dump file from pysorb_dump
+    -p  Input, Opt  ff.param (madatory for oc and op)
     -o  Output      qe_E_ads.dat
     -oc Output, Opt class_E_ads.dat
     -op Output, Opt qe_vs_class_E_ads.dat
+    -og Output, Opt qe_E_ads_geo.dat
     --------------------------------------------
     -negative  no   use only structures with negative adsorption energies
-    -nco       0    cut of for "negatvie" energies
+    -nco           0    cut of for "negatvie" energies
 ------------------------------------------------------
 '''
 
@@ -44,7 +45,7 @@ param_file="ff.param"
 qe_E_ads_file = "qe_E_ads.dat"
 calss_E_ads_file = "class_E_ads.dat"
 qe_vs_class_E_ads_file = "qe_vs_class_E_ads.dat"
-
+qe_E_ads_geo_file = "qe_E_ads_geo.dat"
 
 # OPTIONS
 do_gulp = False
@@ -52,6 +53,7 @@ only_negative = False
 output_o = False
 output_oc = False
 output_op = False
+output_og = False
 
 
 if len(sys.argv)>1:
@@ -86,6 +88,12 @@ if len(sys.argv)>1:
    if option=="negative":
      only_negative = True
      negative_co = sys.argv[sys.argv.index('-negative')+1]
+   if option=="og":
+     try:
+         qe_E_ads_geo_file = sys.argv[sys.argv.index('-og')+1]
+     except:
+         pass
+     output_og = True
    if option=="h":
     print(help)
     sys.exit()
@@ -166,6 +174,11 @@ if do_gulp:
     e_gulp = np.asarray([float(i) for i in e_gulp])
 
 # -------------------------------------------CLASSICAL CALCULATION DONE -------------------------------------------
+
+# added 24.01.17
+# change angles to real angles calculated from final structure
+if output_og:
+    IO.write_e_qe_geo(qe_calcs, qe_E_ads_geo_file)
 
 # write adsorption E from QE to file
 if output_o:

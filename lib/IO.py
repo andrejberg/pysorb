@@ -41,13 +41,15 @@ output_string = { 0 : ("index", ),
                   2 : ("e_GP", ), 
                   3 : ("e_GP_init", ), 
                   4 : ("e_GP_final", ), 
-                  5 : ("dist", "phi", "psi", "atom_ads", "prefix")}
+                  5 : ("dist", "phi", "psi", "atom_ads", "prefix"), 
+                  6 : ("dist", "phi", "psi",  "prefix")}
 output_format = { 0 : ("%6s", "%8i"), 
                   1 : ("%14s", "%14.6f"), 
                   2 : ("%14s", "%14.6f"),
                   3 : ("%14s", "%14.6f"),
                   4 : ("%14s", "%14.6f"),
-                  5 : ("%10s%10s%10s%10s%10s", "%10.3f%10i%10i%10s%10s")}
+                  5 : ("%10s%10s%10s%10s%10s", "%10.3f%10i%10i%10s%10s"), 
+                  6 : ("%10s%10s%10s%10s", "%10.3f%10.3f%10.3f%10s")}
 
 head = { "simple_QE" : ("# " + output_format[0][0] + output_format[1][0] + output_format[5][0] + "\n", 
                                output_string[0]    + output_string[1]    + output_string[5]), 
@@ -55,13 +57,16 @@ head = { "simple_QE" : ("# " + output_format[0][0] + output_format[1][0] + outpu
                                output_string[0]    + output_string[2]    + output_string[5]), 
          "compare"   : ("# " + output_format[0][0] + output_format[1][0] + output_format[2][0] + output_format[5][0] + "\n", 
                                output_string[0]    + output_string[1]    + output_string[2]    + output_string[5]), 
-         "fit"       : ("# " + output_format[0][0] + output_format[1][0] + output_format[3][0] + output_format[4][0] + output_format[5][0] + "\n", 
-                               output_string[0]    + output_string[1]    + output_string[3]    + output_string[4]    + output_string[5])}
+         "fit" :        ("# " + output_format[0][0] + output_format[1][0] + output_format[3][0] + output_format[4][0] + output_format[5][0] + "\n", 
+                               output_string[0]    + output_string[1]    + output_string[3]    + output_string[4]    + output_string[5]), 
+         "geo" :       ("# " + output_format[0][0] + output_format[1][0] + output_format[6][0] + "\n", 
+                               output_string[0]    + output_string[1]    + output_string[6])}
 
 body = { "simple_QE" : output_format[0][1] + output_format[1][1] + output_format[5][1] + "\n", 
          "simple_GP" : output_format[0][1] + output_format[2][1] + output_format[5][1] + "\n", 
          "compare"   : output_format[0][1] + output_format[1][1] + output_format[2][1] + output_format[5][1] + "\n", 
-         "fit"       : output_format[0][1] + output_format[1][1] + output_format[3][1] + output_format[4][1] + output_format[5][1] + "\n"}
+         "fit"       : output_format[0][1] + output_format[1][1] + output_format[3][1] + output_format[4][1] + output_format[5][1] + "\n", 
+         "geo" :       output_format[0][1] + output_format[1][1] + output_format[6][1] + "\n"}
 
 # @@ Die funktion gefaellt mir nicht da sie eine schon offene file braucht
 # write numerical analysis of to energy sets
@@ -105,6 +110,26 @@ def write_e_qe(qe_calcs, f):
         e = convert.e(e_unit_in, e_unit_out, calc.getenergy())
         d = convert.d(d_unit_in, d_unit_out, calc.getdist())
         qe_E_ads.write(body["simple_QE"] % (i, e, d, calc.getphi(), calc.getpsi(), calc.getadsorbedatom(), calc.getprefix()))
+        i += 1
+    qe_E_ads.close()
+
+# (write energies from QE to file)
+# added 24.01.17: use real angles for output
+def write_e_qe_geo(qe_calcs, f):
+    # input:  [QEoutDump()], "file.txt"
+    # output: write to file
+    e_unit_in  = "eV"
+    e_unit_out = "kJ"
+    d_unit_in  = "Ang"
+    d_unit_out = "nm"
+
+    qe_E_ads   = open(f, 'wb')
+    qe_E_ads.write(head["geo"][0] % head["geo"][1])
+    i = 0
+    for calc in qe_calcs:
+        e = convert.e(e_unit_in, e_unit_out, calc.getenergy())
+        d = convert.d(d_unit_in, d_unit_out,  calc.getoxygendistance())
+        qe_E_ads.write(body["geo"] % (i, e,d, calc.getphireal(), calc.getpsireal(), calc.getprefix()))
         i += 1
     qe_E_ads.close()
 
