@@ -70,8 +70,8 @@ def write_e_analysis(e1, e2, name, flag, out):
     ws   = " " * len(flag)
     out.write("# " + name + "\n")
     out.write("# " + "-" * 80 + "\n")
-    out.write("# " + ws   + "%16s%16s%16s%16s\n"         % ("Dmax", "SOS", "MSD", "MSDstd"))
-    out.write("# " + flag + "%16.6f%16.6f%16.6f%16.6f\n" % helper.compare_e(e1, e2))
+    out.write("# " + ws   + "%16s%16s%16s%16s%16s\n"         % ("Dmax", "SOS", "MSD", "MSDstd", "R^2"))
+    out.write("# " + flag + "%16.6f%16.6f%16.6f%16.6f%16.4f\n" % helper.compare_e(e1, e2))
     out.write("# " + "-" * 80 + "\n\n")
 
 # nice output of potentials
