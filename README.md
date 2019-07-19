@@ -13,12 +13,17 @@ the different configurations.
 python2 pysorb_mkqein.py -i examples/qe_input_source/generate_files.params -o examples/qe_input_generated
 ```
 
+This files can then be used for QE calculation runs:
+
+```bash
+pw.x < file.in > file.out
+```
 
 
 ## Extract information from QE outputfiles
 Place a series of QE output files inside of a directory. This script will extract atom positions
 and energies from these files and generate a single file which contains all required information to
-do further analysis of generate a GULP input file.
+do further analysis or generate a GULP input file.
 
 ```bash
 python2 pysorb_dump.py -qe examples/qe_output -e_ref -7425.27983804 -o examples/test.qedump
@@ -40,4 +45,10 @@ python2 pysorb_fit.py -d examples/test.qedump -p examples/gulp_compare/model1.pa
 # or
 
 python2 pysorb_fit.py -d examples/test.qedump -p examples/gulp_compare/model1.param -o examples/fit_run.gin -w -t 310
+```
+
+### Run GULP
+
+```bash
+gulp < file.gin > file.gout
 ```
