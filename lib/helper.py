@@ -8,8 +8,8 @@
 from math import *
 import numpy as np
 
-k_b = 1.3805E-23 # bolzmann constant
-
+k_b_J = 1.3805E-23 # bolzmann constant J
+k_b_eV = 8.617E-5  # bolzmann constant eV
 
 # get center vector. wrong for two vectors if c=(000) ?
 def center(a, b, c=[0, 0, 0]):
@@ -37,9 +37,12 @@ def compare_e(e1, e2):
     
 
 def calc_weight(e, t):
-    beta = 1/(k_b*t)
-    sig = 100/(1 + exp(1E-20*beta*e))
-    return sig
+    beta = 1.0/(k_b_eV*t)
+    try:
+        w = exp(-e*beta)
+    except OverflowError:
+        w = 0.0
+    return w
 
 
 def r_squared(e_obs, e_model):

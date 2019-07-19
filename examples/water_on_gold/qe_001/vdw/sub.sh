@@ -1,0 +1,33 @@
+#!/bin/bash
+sleeptime=1h
+qsub bridge.H2.Au6165.d.2.3.phi.0.psi.0.sh
+sleep $sleeptime
+qsub bridge.H2.Au6165.d.2.3.phi.0.psi.90.sh
+sleep $sleeptime
+qsub bridge.H2.Au6165.d.2.3.phi.45.psi.0.sh
+sleep $sleeptime
+qsub bridge.H2.Au6165.d.2.3.phi.45.psi.90.sh
+sleep $sleeptime
+qsub hollow.H2.Au5859.d.2.3.phi.0.psi.0.sh
+sleep $sleeptime
+qsub hollow.H2.Au5859.d.2.3.phi.0.psi.90.sh
+sleep $sleeptime
+qsub hollow.H2.Au5859.d.2.3.phi.45.psi.0.sh
+sleep $sleeptime
+qsub hollow.H2.Au5859.d.2.3.phi.45.psi.90.sh
+sleep $sleeptime
+qsub bridge.O1.Au6165.d.2.7.phi.0.psi.0.sh
+sleep $sleeptime
+qsub bridge.O1.Au6165.d.2.7.phi.0.psi.90.sh
+sleep $sleeptime
+qsub bridge.O1.Au6165.d.2.7.phi.45.psi.0.sh
+sleep $sleeptime
+qsub bridge.O1.Au6165.d.2.7.phi.45.psi.90.sh
+sleep $sleeptime
+qsub hollow.O1.Au5859.d.2.7.phi.0.psi.0.sh
+sleep $sleeptime
+qsub hollow.O1.Au5859.d.2.7.phi.0.psi.90.sh
+sleep $sleeptime
+qsub hollow.O1.Au5859.d.2.7.phi.45.psi.0.sh
+sleep $sleeptime
+qsub hollow.O1.Au5859.d.2.7.phi.45.psi.90.sh

@@ -1,0 +1,6 @@
+#!/bin/bash
+
+rename 's/2.7/5.2/' bridge.O1.Au6165.*
+rename 's/2.3/4.3/' bridge.H2.Au6165.*
+rename 's/2.7/5.2/' hollow.O1.Au5859.*
+rename 's/2.3/4.3/' hollow.H2.Au5859.*

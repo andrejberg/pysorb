@@ -3,7 +3,7 @@
 #### ------------------------------------------ ####
 # last edit: 10.04.15
 # 
-# program to create QE input files for set of scf
+# script to create QE input files for set of scf
 # calculations
 #### ------------------------------------------ ####
 
@@ -16,41 +16,41 @@ from classes.Molecule import *
 from lib.configurations import obtainconfigurations, filterconfigurations
 import lib.write_qein as wqi
 
-
 help = '''
 ---------------------  pysorb2qe  -------------------- 
-Calculate adsorbtion energies of a 
+Generate files to calculate adsorbtion energies of a 
 molecule on a surface in Quantum Espresso.
 
 Options:
     -h    display help message
     -i    input file with parameters for calculation
-    -scc  create submit scripts for cluster
+    -o    path to directory for generated QE input files
 ------------------------------------------------------
 '''
 # INITIAL PARAMETER
 scc = False
 
-if len(sys.argv)>1:
- for i in sys.argv:
-  if i.startswith('-'):
-   option=i.split('-')[1]
-   if option=="i":
-     pysorb_input = sys.argv[sys.argv.index('-i')+1]
-   if option=="scc":
-     scc = True
-   if option=="h":
+if len(sys.argv) > 1:
+    for i in sys.argv:
+        if i.startswith('-'):
+            option = i.split('-')[1]
+            if option == "i":
+                pysorb_input = sys.argv[sys.argv.index('-i') + 1]
+            if option == "o":
+                pysorb_output = sys.argv[sys.argv.index('-o') + 1]
+            if option == "h":
+                print(help)
+                sys.exit()
+else:
     print(help)
     sys.exit()
-else:
- print(help)
- sys.exit()
 
 try:
-  pysorb_input
+    pysorb_input
 except NameError:
-  print "Input file not defined. (-i)"
-  sys.exit()
+    print
+    "Input file not defined. (-i)"
+    sys.exit()
 
 # get path of inputfile
 path = "/".join(pysorb_input.split("/")[:-1])
@@ -79,32 +79,31 @@ psi = [float(s) for s in psi.split(',')]
 
 # [filter] section
 if config.has_section('filter'):
-   rules = config.items("filter")
-   filterrules = []
-   for rule in rules:
-      r = rule[1].split()
-      filterrules.append((r[0], r[1], float(r[2])))
+    rules = config.items("filter")
+    filterrules = []
+    for rule in rules:
+        r = rule[1].split()
+        filterrules.append((r[0], r[1], float(r[2])))
 
 if filterrules != []:
-   dofilter = True
+    dofilter = True
 else:
-   dofilter = False
+    dofilter = False
 
 # [output] section
-qe_inputdir = config.get("output", "dir")
-prefix      = config.get("output", "prefix")
-
+prefix = config.get("output", "prefix")
 
 print(help)
 
-print '''
+print
+'''
 ------------------------------------------------------
 Input is:
 Axis:      ''' + str(axis) + '''
 ALAT:      ''' + str(alat) + '''
 Distances: ''' + str(dist) + '''
-Phi:       ''' + str(phi) +  '''
-Psi:       ''' + str(psi) +  '''
+Phi:       ''' + str(phi) + '''
+Psi:       ''' + str(psi) + '''
 ------------------------------------------------------
 '''
 
@@ -116,25 +115,25 @@ slab = MySlab(source_slab)
 # molecule
 mol = MyMolecule(source_molecule)
 
-
 # create conformations
 confs = obtainconfigurations(system, mol, slab)
 
 if dofilter:
-   for rule in filterrules:
-      confs = filterconfigurations(confs, slab, rule)
+    for rule in filterrules:
+        confs = filterconfigurations(confs, slab, rule)
 
 # write conformations to QE input files for calculation
-if not os.path.exists(qe_inputdir):
-    os.makedirs(qe_inputdir)
+if not os.path.exists(pysorb_output):
+    os.makedirs(pysorb_output)
 
-wqi.write_conf_to_file(confs, slab, qe_input, qe_inputdir, prefix)
+wqi.write_conf_to_file(confs, slab, qe_input, pysorb_output, prefix)
 
-if scc:
-   wqi.write_submit_script(confs, qe_inputdir, prefix)
+# if scc:
+#    wqi.write_submit_script(confs, qe_inputdir, prefix)
 
-print str(len(confs)) + " configurations created."
-print '''
+print
+str(len(confs)) + " configurations created."
+print
+'''
 ------------------------------------------------------
 '''
-

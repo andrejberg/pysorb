@@ -1,0 +1,28 @@
+[files]
+molecule = h2o_O.pos
+slab     = gold_top.pos
+qe       = qe_template
+
+[control]
+axis    = 3
+alat    = 0
+dist    = 2.5, 2.6, 2.7, 2.8
+phi     = 0, 45, 90
+psi     = 0
+
+[filter]
+01 = O Au 2.5
+02 = H Au 1.7
+
+[output]
+prefix  = top
+
+
+# Input parameters:
+# axis:   [1,2,3] integer for axis which is perpendicular to the surface
+# alat:   if slab coordinates are given in units of alat, change 0 to
+#         alat in bohr unit (celldm(1) in QE inputfile)
+# dist:   list of distances for adsorbtion
+# filter: exclude configurations where distance is smaler than given value
+#         O Au 2.5 -> exclude generated conf if a distance between O and Au
+#         is found which is less than 2.5

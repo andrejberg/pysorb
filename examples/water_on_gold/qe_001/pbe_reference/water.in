@@ -1,0 +1,50 @@
+&control
+    title                   = 'GOLD'
+    calculation             = 'scf'
+    restart_mode            = 'from_scratch'
+    pseudo_dir              = '/home/andrejb/Andrej/qe/pseudo/'
+    outdir                  = '/home/andrejb/Andrej/qe/tempdir/'
+    prefix                  = '001strucdevpbe'
+    verbosity               = 'default'
+/
+ 
+&system
+    ibrav           = 8 
+    celldm(1)       = 24.1232766176
+    celldm(2)       = 1
+    celldm(3)       = 2
+
+    nat             = 3
+    ntyp            = 2
+
+    ecutwfc         = 50
+    ecutrho         = 400
+    occupations     = 'smearing'
+    smearing        = 'marzari-vanderbilt'
+    degauss         = 0.02
+/
+
+&electrons
+    conv_thr        = 1.0D-8
+/
+
+&ions
+
+/
+
+&cell
+
+/
+
+ATOMIC_SPECIES
+ H        1.01 H.pbe-van_ak.UPF
+ O       16.00 O.pbe-van_ak.UPF
+
+K_POINTS automatic
+2 2 3 1 1 1
+
+
+ATOMIC_POSITIONS (angstrom) 
+O   2.126869  0.000000  9.374381
+H   1.544657 -0.484671  9.986429
+H   2.728338  0.500453  9.953984

@@ -8,7 +8,7 @@
 
 import numpy as np
 
-from classes.QEout import *
+from classes.QEoutDump import *
 import convert as convert
 import helper as helper
 
@@ -162,7 +162,7 @@ def write_e(qe_calcs, e_gulp, f):
     
     e_qe        = convert.e(e_unit_in, e_unit_out, [calc.getenergy() for calc in qe_calcs])
     e_gulp      = convert.e(e_unit_in, e_unit_out, e_gulp)
-    d           = convert.d(d_unit_in, d_unit_out, [calc.getdist() for calc in qe_calcs])
+    d           = 0.0 #convert.d(d_unit_in, d_unit_out, [calc.getdist() for calc in qe_calcs])
     
     qe_vs_class_E_ads = file(f,  'wb')
     qe_vs_class_E_ads.write("# " + "-" * 100 + "\n")
@@ -217,6 +217,48 @@ def write_e_after_fit(qe_calcs, gulp_calc, ff_params, f):
         i+=1
     out.close()
 
+#write adsorption E after fit without the use of QE calculations
+def write_e_after_fit_mod(gulp_calc, f):
+    # input:  GULPout, "file.txt"
+    # output: write to file
+    e_unit_in   = "eV"
+    e_unit_out  = "kJ"
+    #d_unit_in   = "Ang"
+    #d_unit_out  = "nm"
+
+    e_qe    = convert.e(e_unit_in, e_unit_out, gulp_calc.e_qe)
+    e_init  = convert.e(e_unit_in, e_unit_out, gulp_calc.e_init)
+    e_final = convert.e(e_unit_in, e_unit_out, gulp_calc.e_fin)
+    d       = np.zeros(len(gulp_calc.e_qe))
+    
+    out = file(f, 'wb')
+    #out.write("# " + "-" * 100 + "\n")
+    #out.write("# Initial input for interatomic potentials\n")
+    #for line in ff_params:
+    #    out.write("# " + line)
+    #out.write("# " + "-" * 100 + "\n\n")
+    
+    out.write("# " + "-" * 100 + "\n")
+    write_e_analysis(e_qe, e_init, "Initial energies:", "INIT", out)
+    write_potentials(gulp_calc.pot_init, "Initial potentials:", out)
+    for line in gulp_calc.rawpot_init:
+        out.write("# " + line)
+    out.write("# " + "-" * 100 + "\n\n")
+    
+    out.write("# " + "-" * 100 + "\n")
+    write_e_analysis(e_qe, e_final, "Final energies:", "FIN", out)
+    write_potentials(gulp_calc.pot_final, "Final potentials:", out)
+    for line in gulp_calc.rawpot_final:
+        out.write("# " + line)
+    out.write("# " + "-" * 100 + "\n\n")
+    
+    out.write(head["fit"][0] % head["fit"][1])
+    i = 0
+    for calc in qe_calcs:
+        out.write(body["fit"] % (i, e_qe[i], e_init[i], e_final[i], d[i], calc.getphi(), calc.getpsi(), calc.getadsorbedatom(), calc.getprefix()))
+        i+=1
+    out.close()
+    
 def write_potentials_GROMACS(gulp_calc, f):
     e_unit_in   = "eV"
     e_unit_out  = "kJ"

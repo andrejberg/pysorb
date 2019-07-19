@@ -1,0 +1,10 @@
+epsilon
+Au 0.1875 3.0030 0 0
+epsilon
+O  0.011282 3.610000 0 0
+epsilon
+H  0.000564 1.098000 0 0
+lennard epsilon 9 6 combine
+Au O 12.0
+lennard epsilon 9 6 combine
+Au H 12.0
